@@ -17,7 +17,8 @@ pipeline {
         stage('Verify Tools') {
             steps {
                 sh '''
-                  mvn -version
+                  echo "Using Maven from: $MAVEN_HOME"
+                  $MAVEN_HOME/bin/mvn -version
                   java -version
                 '''
             }
@@ -25,15 +26,15 @@ pipeline {
 
         stage('Build JAR') {
             steps {
-                sh 'mvn clean package -DskipTests'
+                sh '''
+                  $MAVEN_HOME/bin/mvn clean package -DskipTests
+                '''
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                sh '''
-                  docker build -t my-java-app:latest .
-                '''
+                sh 'docker build -t my-java-app:latest .'
             }
         }
 
@@ -41,18 +42,9 @@ pipeline {
             steps {
                 sh '''
                   docker rm -f my-java-app || true
-                  docker run -d -p 8001:8080 --name my-java-app my-java-app:latest
+                  docker run -d -p 8081:8080 --name my-java-app my-java-app:latest
                 '''
             }
-        }
-    }
-
-    post {
-        success {
-            echo '✅ Pipeline succeeded'
-        }
-        failure {
-            echo '❌ Pipeline failed'
         }
     }
 }
