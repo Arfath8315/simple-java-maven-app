@@ -6,16 +6,20 @@ pipeline {
         jdk 'java21'
     }
 
-    environment {
-        IMAGE_NAME = "java-cicd-app"
-        CONTAINER_NAME = "java-app"
-    }
-
     stages {
 
         stage('Checkout') {
             steps {
                 checkout scm
+            }
+        }
+
+        stage('Verify Tools') {
+            steps {
+                sh '''
+                  mvn -version
+                  java -version
+                '''
             }
         }
 
@@ -28,7 +32,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh '''
-                docker build -t $IMAGE_NAME .
+                  docker build -t my-java-app:latest .
                 '''
             }
         }
@@ -36,14 +40,8 @@ pipeline {
         stage('Deploy Container') {
             steps {
                 sh '''
-                docker stop $CONTAINER_NAME || true
-                docker rm $CONTAINER_NAME || true
-
-                docker run -d \
-                  -p 8001:8080 \
-                  --restart always \
-                  --name $CONTAINER_NAME \
-                  $IMAGE_NAME
+                  docker rm -f my-java-app || true
+                  docker run -d -p 8001:8080 --name my-java-app my-java-app:latest
                 '''
             }
         }
@@ -51,10 +49,10 @@ pipeline {
 
     post {
         success {
-            echo "🚀 Application deployed successfully on port 8001"
+            echo '✅ Pipeline succeeded'
         }
         failure {
-            echo "❌ Pipeline failed"
+            echo '❌ Pipeline failed'
         }
     }
 }
