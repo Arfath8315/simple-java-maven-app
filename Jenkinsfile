@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     tools {
-        maven 'maven3'
+        maven 'maven3.9'
         jdk 'java21'
     }
 
@@ -51,7 +51,7 @@ pipeline {
 
     post {
         success {
-            echo "🚀 Application deployed successfully on port 8081"
+            echo "🚀 Application deployed successfully on port 8001"
         }
         failure {
             echo "❌ Pipeline failed"
